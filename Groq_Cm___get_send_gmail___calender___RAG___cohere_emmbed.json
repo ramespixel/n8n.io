@@ -1,0 +1,283 @@
+{
+  "name": "Groq Cm - get/send gmail - calender - RAG - cohere emmbed",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        -40
+      ],
+      "id": "abc579cb-51f5-474c-b863-7db1358544bd",
+      "name": "When chat message received",
+      "webhookId": "fdfe76a8-e581-4fe0-96ce-f511457f2c34"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=The current time Is: {{ $now }}\n\nMy name is Ramesh Khadka,\n\nMake sure to use it in email signatures.\n\nAlways ask about thing which is unsure from your end and don't assume anything directly"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        220,
+        -40
+      ],
+      "id": "d135bafc-739b-48e0-8fa2-4e4709a999d9",
+      "name": "AI Agent",
+      "executeOnce": false
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        280
+      ],
+      "id": "c9e14328-8a56-42fc-99a1-c3b4d97b40fa",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "ramesdigital@gmail.com",
+          "mode": "list",
+          "cachedResultName": "ramesdigital@gmail.com"
+        },
+        "start": "={{ $fromAI('startDateTime', 'The start date and time of the event') }}",
+        "end": "={{ $fromAI('endDateTime', 'The end date and time of the event') }}",
+        "additionalFields": {
+          "summary": "={{ $fromAI('titleOfEvent', 'The Title of calender event') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        520,
+        200
+      ],
+      "id": "208200fb-88e0-4a5d-a0ce-0e464bfe8496",
+      "name": "Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "JBCxNjsjQxRIrkVP",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $fromAI('emailRecipient','The Recipient of the email') }}",
+        "subject": "={{ $fromAI('subject', 'The subject of the email') }}",
+        "emailType": "text",
+        "message": "={{ $fromAI('content', 'Content of the email') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        680,
+        120
+      ],
+      "id": "9bae821a-6c2e-44af-89ed-f82df90d0e6a",
+      "name": "Gmail",
+      "webhookId": "bec1b972-ca5e-4f6f-bb3c-0bb1cf45ef41",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "rR2E4d5tvWA03cuZ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "deepseek-r1-distill-llama-70b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        140
+      ],
+      "id": "ca52a638-c960-493f-9263-39817914c098",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "QUAjXx1jWXeXOIAY",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": "={{ $fromAI('messageLimit', 'maximum number of messages') }}",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        220,
+        260
+      ],
+      "id": "f99f47e3-ed2e-4a7b-869f-a1bd57395381",
+      "name": "Gmail1",
+      "webhookId": "1d65361f-c3d5-472a-a798-2f4d082900e7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "rR2E4d5tvWA03cuZ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Get the company' refund policy",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "vector_store_key"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        840,
+        40
+      ],
+      "id": "09df2b5c-781c-42ad-a749-a69bc1de2f62",
+      "name": "Simple Vector Store"
+    },
+    {
+      "parameters": {
+        "modelName": "embed-multilingual-v2.0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsCohere",
+      "typeVersion": 1,
+      "position": [
+        880,
+        180
+      ],
+      "id": "62188b0a-148b-4096-90c1-af8ef981ed06",
+      "name": "Embeddings Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "mPHSnx5fYTRXu472",
+          "name": "CohereApi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Cohere": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Simple Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kathmandu",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "657729eb-546b-4c4f-b279-1c05731ade7e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "03617669b8750908be2c102f4cd8bf2136d3fd771ce2ec47d1cc3df4d5beacce"
+  },
+  "id": "zr8sEYHLwkIl8yQa",
+  "tags": []
+}
